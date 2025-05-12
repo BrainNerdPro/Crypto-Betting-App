@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import io from 'socket.io-client'
 import { UserIcon, CurrencyDollarIcon, ClockIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 
-const socket = io('http://localhost:5000')
+const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}`)
 
 interface DailyLine {
   question: string
@@ -68,7 +68,7 @@ export default function HomePage() {
     socket.emit('register_username', storedUsername)
 
     // Fetch balance
-    fetch(`http://localhost:5000/api/user/balance/${storedUsername}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user/balance/${storedUsername}`)
       .then(res => res.json())
       .then(data => {
         if (data?.balance !== undefined) {
@@ -79,7 +79,7 @@ export default function HomePage() {
       .catch(() => console.warn("⚠️ Failed to fetch balance"))
 
     // Fetch daily line
-    fetch('http://localhost:5000/api/daily-line')
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/daily-line`)
       .then(res => res.json())
       .then(data => {
         if (!data.error) {
@@ -89,7 +89,7 @@ export default function HomePage() {
       })
 
     // Fetch bet volume
-    fetch('http://localhost:5000/api/bet-volume')
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bet-volume`)
       .then(res => res.json())
       .then(data => {
         if (!data.error) {
@@ -137,7 +137,7 @@ export default function HomePage() {
       return
     }
 
-    const res = await fetch('http://localhost:5000/api/place-bet', {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/place-bet`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, choice: side, amount })

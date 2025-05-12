@@ -44,7 +44,7 @@ export default function WithdrawPage() {
   
 
   useEffect(() => {
-    const socket = io("http://localhost:5000"); // adjust if deployed
+    const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}`); // adjust if deployed
 
     const storedUsername = localStorage.getItem("username");
 
@@ -54,7 +54,7 @@ export default function WithdrawPage() {
     }
 
     const fetchBalance = async (user: string) => {
-      const res = await fetch(`http://localhost:5000/api/user/balance/${user}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/user/balance/${user}`);
       const data = await res.json();
       if (res.ok) {
         setBalance(data.balance);
@@ -103,7 +103,7 @@ export default function WithdrawPage() {
     }
   
     try {
-      const res = await fetch("http://localhost:5000/api/withdraw", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/withdraw`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -130,7 +130,7 @@ export default function WithdrawPage() {
   };
 
   const fetchWithdrawalHistory = async (username: string) => {
-    const res = await fetch(`http://localhost:5000/api/withdrawals/${username}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/withdrawals/${username}`);
     const data = await res.json();
     if (Array.isArray(data)) setWithdrawals(data);
   };

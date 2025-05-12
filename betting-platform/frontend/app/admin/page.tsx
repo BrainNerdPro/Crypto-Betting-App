@@ -44,7 +44,7 @@ export default function AdminPage() {
 
   const handleSetLine = async (e: React.FormEvent) => {
     e.preventDefault()
-    const res = await fetch("http://localhost:5000/api/admin/set-line", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/set-line`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -76,7 +76,7 @@ export default function AdminPage() {
       return
     }
     const today = new Date().toISOString().slice(0, 10)
-    const res = await fetch("http://localhost:5000/api/resolve-bet", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/resolve-bet`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -99,7 +99,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchTodayBets();
-    const socket = io("http://localhost:5000");
+    const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}`);
     socket.on("bet_volume_updated", () => fetchTodayBets());
     return () => {
       socket.off("bet_volume_updated");
@@ -108,7 +108,7 @@ export default function AdminPage() {
   }, []);
 
   const fetchTodayBets = async () => {
-    const res = await fetch('http://localhost:5000/api/admin/bets', {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/bets`, {
       headers: { 'x-admin-token': '91f95fa792cdb9ed28a7b4044f681fa4d1e6db6d7118e0bfb68c6d24ff1538c2' }
     });
     const data = await res.json();

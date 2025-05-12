@@ -29,7 +29,7 @@ export default function DepositPage() {
     }
     setUsername(storedUsername)
 
-    fetch("http://localhost:5000/api/deposit-address")
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/deposit-address`)
     .then(res => res.json())
     .then(data => setWalletAddress(data.address))
     .catch(() => setMessage({ text: "Failed to load deposit address", type: "error" }));
@@ -70,7 +70,7 @@ export default function DepositPage() {
     }
   
     try {
-      const res = await fetch("http://localhost:5000/api/verify-deposit", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/verify-deposit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

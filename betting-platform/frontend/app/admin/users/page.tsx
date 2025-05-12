@@ -33,7 +33,7 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/admin/users", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/users`, {
           headers: {
             "x-admin-token": "91f95fa792cdb9ed28a7b4044f681fa4d1e6db6d7118e0bfb68c6d24ff1538c2",
           },

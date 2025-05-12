@@ -17,7 +17,7 @@
   } from "@heroicons/react/24/outline";
   
 
-  const socket = io("http://localhost:5000"); 
+  const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}`); 
 
   type Withdrawal = {
     _id: string
@@ -46,13 +46,13 @@
     const router = useRouter();
 
     const fetchWithdrawals = async () => {
-      const res = await fetch("http://localhost:5000/api/admin/withdrawals")
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/withdrawals`)
       const data = await res.json()
       if (Array.isArray(data)) setWithdrawals(data)
     }
 
     const approveWithdrawal = async (id: string) => {
-      const res = await fetch("http://localhost:5000/api/admin/withdrawals/approve", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/withdrawals/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -67,7 +67,7 @@
     }
 
     const rejectWithdrawal = async (id: string) => {
-      const res = await fetch("http://localhost:5000/api/admin/withdrawals/reject", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/withdrawals/reject`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
