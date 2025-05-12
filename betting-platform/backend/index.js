@@ -8,7 +8,16 @@ const app = express();
 
 console.log("🟢 Backend server initializing...");
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_ORIGIN || "http://localhost:3000", // fallback for local dev
+  credentials: true
+}));
+
+app.use((req, res, next) => {
+  console.log("Origin:", req.headers.origin);
+  next();
+});
+
 app.use(express.json());
 
 // ✅ Step 1: create HTTP server
