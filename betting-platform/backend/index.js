@@ -8,6 +8,7 @@ const app = express();
 
 console.log("🟢 Backend server initializing...");
 
+// ✅ CORS setup (for Vercel + local)
 const allowedOrigins = [
   "https://crypto-betting-app-jkei.vercel.app",
   "http://localhost:3000"
@@ -23,6 +24,12 @@ app.use(cors({
   },
   credentials: true
 }));
+
+// ✅ Log Origin headers
+app.use((req, res, next) => {
+  console.log("🌐 Incoming Origin:", req.headers.origin);
+  next();
+});
 
 app.use(express.json());
 
@@ -103,11 +110,6 @@ const watchBets = () => {
   console.log("✅ Watching bets for real-time updates...");
 };
 watchBets();
-
-app.use((req, res, next) => {
-  console.log("🌐 Origin:", req.headers.origin);
-  next();
-});
 
 // Routes
 const dailyLineRoutes = require('./routes/dailyLineRoutes')(io);
