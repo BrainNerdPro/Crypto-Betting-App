@@ -8,10 +8,22 @@ const app = express();
 
 console.log("🟢 Backend server initializing...");
 
+const allowedOrigins = [
+  "https://crypto-betting-app-jkei.vercel.app",
+  "http://localhost:3000"
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_ORIGIN || "http://localhost:3000", // fallback for local dev
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("❌ Not allowed by CORS: " + origin));
+    }
+  },
   credentials: true
 }));
+
 app.use(express.json());
 
 // ✅ Step 1: create HTTP server
@@ -99,6 +111,11 @@ const watchBets = () => {
   console.log("✅ Watching bets for real-time updates...");
 };
 watchBets();
+
+app.use((req, res, next) => {
+  console.log("🌐 Origin:", req.headers.origin);
+  next();
+});
 
 // Routes
 const dailyLineRoutes = require('./routes/dailyLineRoutes')(io);
