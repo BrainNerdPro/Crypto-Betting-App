@@ -10,7 +10,7 @@ console.log("🟢 Backend server initializing...");
 
 // ✅ CORS setup (for Vercel + local)
 const allowedOrigins = [
-  "https://crypto-betting-app-jkei.vercel.app",
+  "https://crypto-betting-platform.netlify.app",
   "http://localhost:3000"
 ];
 
