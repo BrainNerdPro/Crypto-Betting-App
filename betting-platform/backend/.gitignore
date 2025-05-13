@@ -1,11 +1,5 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
-
-# next.js
-/.next/
-/out/
 
 # production
 /build
@@ -22,6 +16,18 @@ yarn-error.log*
 # renderer
 .renderer
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# OS/system files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Coverage/test
+coverage/
+*.lcov
+
+# Build/output (if any)
+dist/
+build/
