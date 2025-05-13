@@ -176,7 +176,7 @@ export default function HomePage() {
           </div>
           <div className="flex items-center gap-1">
             <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
-            <span className="font-semibold">{balance.toFixed(2)} ETH</span>
+            <span className="font-semibold">{balance} ETH</span>
           </div>
         </div>
 
