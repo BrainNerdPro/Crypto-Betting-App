@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
+const isNetlify = process.env.NETLIFY === 'true';
+
+console.log(`▶️ Building for ${isNetlify ? 'Netlify (static)' : 'Vercel (SSR)'}`);
+
 const nextConfig = {
-  output: 'export', // ⬅️ This is key for Netlify static hosting
   trailingSlash: true,
   reactStrictMode: true,
   eslint: {
@@ -9,9 +12,12 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  images: {
-    unoptimized: true,
-  },
+  ...(isNetlify && {
+    output: 'export',
+    images: {
+      unoptimized: true,
+    },
+  }),
 }
 
 export default nextConfig
