@@ -9,10 +9,7 @@ const app = express();
 console.log("🟢 Backend server initializing...");
 
 // ✅ CORS setup (for Vercel + local)
-const allowedOrigins = [
-  "https://crypto-betting-platform.netlify.app",
-  "http://localhost:3000"
-];
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "").split(",");
 
 app.use(cors({
   origin: function (origin, callback) {
