@@ -56,20 +56,12 @@ exports.placeBet = (io) => async (req, res) => {
       .filter((b) => b.choice === 'YES')
       .reduce((sum, b) => sum + b.amount, 0);
 
-    const no_total = bets
-      .filter((b) => b.choice === 'NO')
-      .reduce((sum, b) => sum + b.amount, 0);
-
-    const total = yes_total + no_total;
-    const yes_percent = total > 0 ? Math.round((yes_total / total) * 100) : 0;
-    const no_percent = 100 - yes_percent;
+      const totalAmount = bets.reduce((sum, bet) => sum + bet.amount, 0);
+      const totalBets = bets.length;
 
     io.emit('bet_volume_updated', {
-      yes_total,
-      no_total,
-      total,
-      yes_percent,
-      no_percent,
+      total_bets: totalBets,
+      total_amount: totalAmount,
     });
 
     res.json({ message: 'Bet placed successfully', balance: user.balance });

@@ -64,19 +64,12 @@ io.on("connection", async (socket) => {
 
     const bets = await Bet.find({ line_id: today });
 
-    const yes_total = bets.filter(b => b.choice === 'YES').reduce((sum, b) => sum + b.amount, 0);
-    const no_total = bets.filter(b => b.choice === 'NO').reduce((sum, b) => sum + b.amount, 0);
-    const total = yes_total + no_total;
-    const yes_percent = total > 0 ? Math.round((yes_total / total) * 100) : 0;
-    const no_percent = 100 - yes_percent;
+    const totalAmount = bets.reduce((sum, bet) => sum + bet.amount, 0);
+    const totalBets = bets.length;
 
     socket.emit("bet_volume_updated", {
-      yes_total,
-      no_total,
-      total,
-      yes_percent,
-      no_percent,
-      line_id: today,
+      total_bets: totalBets,
+      total_amount: totalAmount,
     });
 
   } catch (err) {
@@ -94,15 +87,14 @@ const watchBets = () => {
     if (change.operationType === "insert") {
         const today = new Date().toISOString().slice(0, 10);
         const bets = await Bet.find({ line_id: today });
+
+        const totalAmount = bets.reduce((sum, bet) => sum + bet.amount, 0);
+        const totalBets = bets.length;        
         
-        const yes_total = bets.filter(b => b.choice === 'YES').reduce((sum, b) => sum + b.amount, 0);
-        const no_total = bets.filter(b => b.choice === 'NO').reduce((sum, b) => sum + b.amount, 0);
-        const total = yes_total + no_total;
-        const yes_percent = total > 0 ? Math.round((yes_total / total) * 100) : 0;
-        const no_percent = 100 - yes_percent;
-        
-        io.emit("bet_volume_updated", { yes_total, no_total, total, yes_percent, no_percent });
-        
+        io.emit("bet_volume_updated", {
+          total_bets: totalBets,
+          total_amount: totalAmount,
+        });        
 
       console.log("📈 Real-time bet volume broadcasted");
     }
