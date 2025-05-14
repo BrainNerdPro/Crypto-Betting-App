@@ -19,7 +19,7 @@ router.post('/resolve-bet',  verifyToken, requireAdmin, resolveBet);
 router.get('/admin/users',  verifyToken, requireAdmin, getAllUsers);
 
 // Change password
-router.post("/admin/change-password", changePassword);
+router.post("/admin/change-password", verifyToken, requireAdmin, changePassword);
 
 
 module.exports = router;
