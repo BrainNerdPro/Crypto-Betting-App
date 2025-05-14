@@ -1,16 +1,27 @@
 "use client";
 
 import React, { useState } from "react";
+import { CheckCircleIcon, XCircleIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
 };
 
+const getPasswordStrength = (password: string) => {
+  if (password.length < 6) return "weak";
+  if (/[A-Z]/.test(password) && /\d/.test(password) && /[^A-Za-z0-9]/.test(password)) return "strong";
+  return "medium";
+};
+
 const ChangePasswordModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
   const [status, setStatus] = useState<{ message: string; success: boolean } | null>(null);
+
+  const passwordStrength = getPasswordStrength(newPassword);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,13 +37,13 @@ const ChangePasswordModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
     const data = await res.json();
     if (res.ok) {
-      setStatus({ message: "✅ Password updated successfully.", success: true });
+      setStatus({ message: "Password updated successfully.", success: true });
       setTimeout(() => {
         setStatus(null);
         onClose();
       }, 1000);
     } else {
-      setStatus({ message: "❌ " + (data.error || "Update failed."), success: false });
+      setStatus({ message: data.error || "Update failed.", success: false });
     }
   };
 
@@ -42,23 +53,60 @@ const ChangePasswordModal: React.FC<Props> = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
         <h2 className="text-lg font-semibold mb-4 text-center">Change Admin Password</h2>
-        <form onSubmit={handleChangePassword} className="space-y-4">
-          <input
-            type="password"
-            placeholder="Current Password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            className="w-full p-2 border rounded text-sm"
-            required
-          />
-          <input
-            type="password"
-            placeholder="New Password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full p-2 border rounded text-sm"
-            required
-          />
+
+        <form onSubmit={handleChangePassword} className="space-y-4 relative">
+          {/* Current Password */}
+          <div className="relative">
+            <input
+              type={showCurrent ? "text" : "password"}
+              placeholder="Current Password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="w-full p-2 pr-10 border rounded text-sm"
+              required
+            />
+            <span
+              className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
+              onClick={() => setShowCurrent(!showCurrent)}
+            >
+              {showCurrent ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+            </span>
+          </div>
+
+          {/* New Password */}
+          <div className="relative">
+            <input
+              type={showNew ? "text" : "password"}
+              placeholder="New Password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full p-2 pr-10 border rounded text-sm"
+              required
+            />
+            <span
+              className="absolute right-3 top-2.5 cursor-pointer text-gray-500"
+              onClick={() => setShowNew(!showNew)}
+            >
+              {showNew ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+            </span>
+          </div>
+
+          {/* Strength Indicator */}
+          <div className="text-sm text-gray-600">
+            Strength:{" "}
+            <span
+              className={`font-semibold ${
+                passwordStrength === "weak"
+                  ? "text-red-500"
+                  : passwordStrength === "medium"
+                  ? "text-yellow-500"
+                  : "text-green-600"
+              }`}
+            >
+              {passwordStrength}
+            </span>
+          </div>
+
           <div className="flex justify-end gap-2">
             <button
               type="button"
@@ -75,14 +123,18 @@ const ChangePasswordModal: React.FC<Props> = ({ isOpen, onClose }) => {
             </button>
           </div>
         </form>
+
         {status && (
-          <p
-            className={`mt-3 text-sm text-center ${
-              status.success ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {status.message}
-          </p>
+          <div className="mt-4 flex items-center gap-2 text-sm text-center justify-center">
+            {status.success ? (
+              <CheckCircleIcon className="w-5 h-5 text-green-600" />
+            ) : (
+              <XCircleIcon className="w-5 h-5 text-red-600" />
+            )}
+            <span className={status.success ? "text-green-600" : "text-red-600"}>
+              {status.message}
+            </span>
+          </div>
         )}
       </div>
     </div>
