@@ -84,7 +84,7 @@ exports.verifyDeposit = async (req, res) => {
 
 exports.registerSender = async (req, res) => {
   const { username, senderAddress, submittedAt } = req.body;
-    console.log("Registering sender:", { username, senderAddress, submittedAt });
+  console.log("Registering sender:", { username, senderAddress, submittedAt });
 
   if (!username || !senderAddress || !submittedAt) {
     return res.status(400).json({ success: false, error: "Missing fields" });
