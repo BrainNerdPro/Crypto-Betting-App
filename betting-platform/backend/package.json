@@ -10,6 +10,7 @@
     "decimal.js": "^10.5.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.509.0",
     "mongoose": "^8.14.1",
     "socket.io": "^4.8.1",
