@@ -28,7 +28,7 @@ export default function HomePage() {
   const [volume, setVolume] = useState({ total_bets: 0, total_amount: 0 })
   const [isClosed, setIsClosed] = useState(false)
   const [justClosed, setJustClosed] = useState(false)
-
+  
   const router = useRouter()
 
   const startCountdown = (cutoffISO: string) => {

@@ -40,11 +40,7 @@ export default function AdminPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showAll, setShowAll] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  // const [currentPassword, setCurrentPassword] = useState("");
-  // const [newPassword, setNewPassword] = useState("");
-  // const [passwordMessage, setPasswordMessage] = useState<{ text: string, success: boolean } | null>(null);
-
-
+  const [oddsFormat, setOddsFormat] = useState<"american" | "decimal">("american")
 
   const rowsPerPage = 10;
   const router = useRouter()
@@ -151,17 +147,23 @@ export default function AdminPage() {
   //     setPasswordMessage({ text: data.error || "Failed to update password.", success: false });
   //   }
   // };
+  const convertOdds = (americanOdds: string): string => {
+    const odds = parseFloat(americanOdds)
+    if (isNaN(odds)) return ""
+    const decimal = odds > 0 ? (odds / 100 + 1) : (100 / Math.abs(odds) + 1)
+    return decimal.toFixed(2)
+  }
 
 
-  useEffect(() => {
-    fetchTodayBets();
-    const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}`);
-    socket.on("bet_volume_updated", () => fetchTodayBets());
-    return () => {
-      socket.off("bet_volume_updated");
-      //socket.disconnect();
-    };
-  }, []);
+    useEffect(() => {
+      fetchTodayBets();
+      const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}`);
+      socket.on("bet_volume_updated", () => fetchTodayBets());
+      return () => {
+        socket.off("bet_volume_updated");
+        //socket.disconnect();
+      };
+    }, []);
 
   const fetchTodayBets = async () => {
     const token = localStorage.getItem("token")
@@ -220,6 +222,20 @@ export default function AdminPage() {
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <ChartBarIcon className="w-5 h-5 text-blue-600" /> Set Betting Line
           </h2>
+
+          <div className="mb-4 flex items-center gap-2">
+            <label htmlFor="odds-format" className="text-sm text-gray-600 font-medium">Odds format:</label>
+            <select
+              id="odds-format"
+              value={oddsFormat}
+              onChange={(e) => setOddsFormat(e.target.value as "american" | "decimal")}
+              className="text-sm px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+            >
+              <option value="american">American</option>
+              <option value="decimal">Decimal</option>
+            </select>
+          </div>
+
             <form onSubmit={handleSetLine} className="space-y-4">
               <div>
                 <label htmlFor="question" className="block text-sm font-medium mb-1 text-gray-700">
@@ -247,6 +263,9 @@ export default function AdminPage() {
                     className="w-full p-2 border border-gray-300 rounded focus:ring focus:ring-blue-200 text-sm"
                     placeholder="-110"
                   />
+                  {oddsFormat === "decimal" && yesOdds && (
+                    <p className="text-sm text-gray-500 mt-1">Decimal: {convertOdds(yesOdds)}</p>
+                  )}
                 </div>
 
                 <div>
@@ -261,6 +280,9 @@ export default function AdminPage() {
                     className="w-full p-2 border border-gray-300 rounded focus:ring focus:ring-blue-200 text-sm"
                     placeholder="-110"
                   />
+                  {oddsFormat === "decimal" && noOdds && (
+                    <p className="text-sm text-gray-500 mt-1">Decimal: {convertOdds(noOdds)}</p>
+                  )}
                 </div>
               </div>
 
