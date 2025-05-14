@@ -41,6 +41,12 @@ const ChangePasswordModal: React.FC<Props> = ({ isOpen, onClose }) => {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isStrongPassword(newPassword)) {
+      alert("Password must be strong (8+ chars, uppercase, lowercase, number, symbol)")
+      return
+    }
+
     const token = localStorage.getItem("token");
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/change-password`, {
       method: "POST",
@@ -54,6 +60,8 @@ const ChangePasswordModal: React.FC<Props> = ({ isOpen, onClose }) => {
     const data = await res.json();
     if (res.ok) {
       setStatus({ message: "Password updated successfully.", success: true });
+      setCurrentPassword("");
+    setNewPassword("");
       setTimeout(() => {
         setStatus(null);
         onClose();

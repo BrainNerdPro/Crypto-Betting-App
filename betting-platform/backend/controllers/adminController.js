@@ -73,10 +73,11 @@ exports.changePassword = async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
+    console.log("Decoded token:", decoded);
+    const username = decoded.username;
 
     const { currentPassword, newPassword } = req.body;
-    const user = await User.findById(userId);
+    const user = await User.findOne({username});
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ error: "Current password is incorrect" });
