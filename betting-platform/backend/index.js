@@ -116,8 +116,7 @@ app.use('/api', require('./routes/adminRoutes'));
 app.use('/api', require('./routes/userRoutes'));
 app.use('/api', require('./routes/withdrawRoutes'));
 app.use('/api', require('./routes/adminWithdrawalRoutes'));
-app.use("/api", require("./routes/verifyDepositRoutes"));
-app.use("/api", require("./routes/depositAddressRoutes"));
+app.use("/api", require("./routes/depositRoutes"));
 
 
 

@@ -18,7 +18,6 @@ export default function DepositPage() {
   const [walletAddress, setWalletAddress] = useState("");
 
   const router = useRouter()
-  //const walletAddress = "0x1234567890abcdef1234567890abcdef12345678"
 
   useEffect(() => {
     // Check if user is logged in
@@ -56,9 +55,27 @@ export default function DepositPage() {
       return
     }
 
-    // Move to step 2
-    setMessage({ text: "", type: "" })
-    setStep(2)
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register-sender`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username,
+        senderAddress,
+        submittedAt: new Date().toISOString()
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.success) {
+        setMessage({ text: "Failed to register address", type: "error" });
+      } else {
+        setMessage({ text: "", type: "" });
+        setStep(2);
+      }
+    })
+    .catch(() => {
+      setMessage({ text: "Error connecting to server", type: "error" });
+    });
   }
 
   const verifyDeposit = async (e: React.FormEvent) => {
@@ -83,17 +100,17 @@ export default function DepositPage() {
       const data = await res.json();
   
       if (res.ok) {
-        setMessage({ text: "✅ Deposit verified successfully!", type: "success" });
+        setMessage({ text: " Deposit verified successfully!", type: "success" });
         setTxid("");
         setTimeout(() => {
           setStep(1);
           setSenderAddress("");
         }, 3000);
       } else {
-        setMessage({ text: data.error || "❌ Verification failed", type: "error" });
+        setMessage({ text: data.error || " Verification failed", type: "error" });
       }
     } catch (err) {
-      setMessage({ text: "❌ Server error during deposit", type: "error" });
+      setMessage({ text: " Server error during deposit", type: "error" });
     }
   };
   
@@ -115,8 +132,10 @@ export default function DepositPage() {
 
         {step === 1 ? (
           <>
-            <p className="mb-4 text-gray-600 text-sm">
-              Enter the address you'll be sending ETH from:
+            <p className="mb-4 text-red-600 text-sm font-medium">
+              ⚠️ IMPORTANT: You must enter your wallet address <u>before</u> sending ETH. 
+              If you send funds without doing this, someone else may claim your deposit. 
+              We are <strong>not responsible</strong> for lost funds.
             </p>
 
             <form onSubmit={handleSenderAddressSubmit} className="space-y-4">
