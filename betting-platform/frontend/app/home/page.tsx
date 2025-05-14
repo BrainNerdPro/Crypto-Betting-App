@@ -202,7 +202,7 @@ export default function HomePage() {
 
           {dailyLine.winning_side && (
             <p className="text-center text-green-600 font-bold text-lg mb-4">
-              ✅ Result: {dailyLine.winning_side} wins!
+               Result: {dailyLine.winning_side} wins!
             </p>
           )}
 

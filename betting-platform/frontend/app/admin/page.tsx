@@ -8,9 +8,9 @@ import {
   ChartBarIcon,
   CheckCircleIcon,
   TrashIcon,
-  XCircleIcon
 } from '@heroicons/react/24/outline'
 import Alert from "@/components/Alert";
+import { jwtDecode } from "jwt-decode"
 
 type Bet = {
   id: number
@@ -42,13 +42,31 @@ export default function AdminPage() {
   const rowsPerPage = 10;
   const router = useRouter()
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+  
+    try {
+      const decoded: any = jwtDecode(token);
+      if (!decoded.isAdmin) router.push("/home");
+    } catch (err) {
+      console.error("Invalid token:", err);
+      router.push("/login");
+    }
+  }, []);
+
   const handleSetLine = async (e: React.FormEvent) => {
     e.preventDefault()
+    const token = localStorage.getItem("token")
+    if (!token) return router.push("/login")
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/set-line`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-admin-token": "91f95fa792cdb9ed28a7b4044f681fa4d1e6db6d7118e0bfb68c6d24ff1538c2"
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
         question,
@@ -76,11 +94,13 @@ export default function AdminPage() {
       return
     }
     const today = new Date().toISOString().slice(0, 10)
+    const token = localStorage.getItem("token")
+    if (!token) return router.push("/login");
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/resolve-bet`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-admin-token": "91f95fa792cdb9ed28a7b4044f681fa4d1e6db6d7118e0bfb68c6d24ff1538c2"
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({ date: today, winning_side: winningSide })
     })
@@ -108,8 +128,13 @@ export default function AdminPage() {
   }, []);
 
   const fetchTodayBets = async () => {
+    const token = localStorage.getItem("token")
+    if (!token) return router.push("/login")
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/bets`, {
-      headers: { 'x-admin-token': '91f95fa792cdb9ed28a7b4044f681fa4d1e6db6d7118e0bfb68c6d24ff1538c2' }
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
     });
     const data = await res.json();
     if (Array.isArray(data)) setBets(data);

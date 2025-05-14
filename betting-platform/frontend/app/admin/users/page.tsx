@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
 import {
   UserGroupIcon,
   ArrowUturnLeftIcon,
@@ -27,15 +28,31 @@ export default function AdminUsersPage() {
   const [showAll, setShowAll] = useState(false);
 
   const rowsPerPage = 10;
-
   const router = useRouter();
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return router.push("/login");
+
+    try {
+      const decoded: any = jwtDecode(token);
+      if (!decoded.isAdmin) router.push("/home");
+    } catch (err) {
+      console.error("Invalid token:", err);
+      router.push("/login");
+    }
+  }, []);
+
+  useEffect(() => {
     const fetchUsers = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/users`, {
           headers: {
-            "x-admin-token": "91f95fa792cdb9ed28a7b4044f681fa4d1e6db6d7118e0bfb68c6d24ff1538c2",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -48,7 +65,7 @@ export default function AdminUsersPage() {
         setUsers(data);
         setFilteredUsers(data);
       } catch (err: any) {
-        console.error("❌ Error loading users:", err.message);
+        console.error("\u274C Error loading users:", err.message);
         setError(err.message);
       }
     };
@@ -61,7 +78,7 @@ export default function AdminUsersPage() {
       user.username.toLowerCase().includes(search.toLowerCase())
     );
     setFilteredUsers(filtered);
-    setCurrentPage(1); // reset to first page on search
+    setCurrentPage(1);
   }, [search, users]);
 
   const toggleSort = (field: keyof User) => {
@@ -85,8 +102,8 @@ export default function AdminUsersPage() {
   });
 
   const paginated = showAll
-  ? sorted
-  : sorted.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+    ? sorted
+    : sorted.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   return (
     <div className="max-w-5xl mx-auto p-6">
@@ -134,15 +151,13 @@ export default function AdminUsersPage() {
                     className="p-2 text-left cursor-pointer"
                     onClick={() => toggleSort("username")}
                   >
-                    Username{" "}
-                    {sortField === "username" && (sortOrder === "asc" ? "▲" : "▼")}
+                    Username {sortField === "username" && (sortOrder === "asc" ? "▲" : "▼")}
                   </th>
                   <th
                     className="p-2 text-left cursor-pointer"
                     onClick={() => toggleSort("balance")}
                   >
-                    Balance{" "}
-                    {sortField === "balance" && (sortOrder === "asc" ? "▲" : "▼")}
+                    Balance {sortField === "balance" && (sortOrder === "asc" ? "▲" : "▼")}
                   </th>
                 </tr>
               </thead>
@@ -161,7 +176,6 @@ export default function AdminUsersPage() {
           </div>
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
-            {/* Left: Prev/Next */}
             <div className="flex gap-2 justify-start">
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
@@ -193,7 +207,6 @@ export default function AdminUsersPage() {
               </button>
             </div>
 
-            {/* Center: Page info */}
             <div className="text-sm text-gray-500 text-center">
               {showAll
                 ? `Showing all ${filteredUsers.length} users`
@@ -203,7 +216,6 @@ export default function AdminUsersPage() {
                   )} of ${filteredUsers.length}`}
             </div>
 
-            {/* Right: Jump to select */}
             <div className="flex items-center gap-2 justify-end">
               <label htmlFor="jump" className="text-sm text-gray-600">
                 Jump to:

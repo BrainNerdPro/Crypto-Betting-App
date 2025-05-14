@@ -1,120 +1,150 @@
-  "use client"
+  "use client";
 
-  import { useEffect, useState } from "react"
-  import { io } from "socket.io-client";
-  import { useRouter } from "next/navigation";
-  import { ClipboardCopy, Check } from "lucide-react";
-  import {
-    ClipboardDocumentIcon,
-    CheckCircleIcon,
-    XCircleIcon,
-    BanknotesIcon,
-    ArrowUturnLeftIcon,
-    UserIcon,
-    WalletIcon,
-    TrashIcon,
-    AdjustmentsHorizontalIcon,
-  } from "@heroicons/react/24/outline";
-  
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { io } from "socket.io-client";
+import { jwtDecode } from "jwt-decode";
+import {
+  ClipboardDocumentIcon,
+  CheckCircleIcon,
+  BanknotesIcon,
+  ArrowUturnLeftIcon,
+  UserIcon,
+  WalletIcon,
+  TrashIcon,
+  AdjustmentsHorizontalIcon,
+} from "@heroicons/react/24/outline";
 
-  const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}`); 
+const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}`);
 
-  type Withdrawal = {
-    _id: string
-    username: string
-    wallet_address: string
-    amount: number
-    status: "pending" | "completed" | "rejected"
-    timestamp: string
-  }
+type Withdrawal = {
+  _id: string;
+  username: string;
+  wallet_address: string;
+  amount: number;
+  status: "pending" | "completed" | "rejected";
+  timestamp: string;
+};
 
-  export default function AdminWithdrawals() {
-    const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
-    const [filterUsername, setFilterUsername] = useState("");
-    const [filterStatus, setFilterStatus] = useState("");
-    const [filterWallet, setFilterWallet] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [sortBy, setSortBy] = useState<keyof Withdrawal | null>(null);
-    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-    const [copiedId, setCopiedId] = useState<string | null>(null);
-    const [showAll, setShowAll] = useState(false);
-    const [showLineAlert, setShowLineAlert] = useState(false);
-    const [showResolveAlert, setShowResolveAlert] = useState(false);
+export default function AdminWithdrawals() {
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [filterUsername, setFilterUsername] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterWallet, setFilterWallet] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<keyof Withdrawal | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  const rowsPerPage = 10;
+  const router = useRouter();
 
-    const rowsPerPage = 10;
-    const router = useRouter();
+  // ✅ Protect page (admin-only)
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return router.push("/login");
 
-    const fetchWithdrawals = async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/withdrawals`)
-      const data = await res.json()
-      if (Array.isArray(data)) setWithdrawals(data)
+    try {
+      const decoded: any = jwtDecode(token);
+      if (!decoded.isAdmin) router.push("/home");
+    } catch {
+      router.push("/login");
     }
+  }, []);
 
-    const approveWithdrawal = async (id: string) => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/withdrawals/approve`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      })
-      const data = await res.json()
-      if (res.ok) {
-        alert("✅ Withdrawal approved")
-        fetchWithdrawals()
-      } else {
-        alert(`❌ ${data.error || "Failed to approve"}`)
-      }
-    }
+  const fetchWithdrawals = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-    const rejectWithdrawal = async (id: string) => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/withdrawals/reject`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+    setLoading(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/withdrawals`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
       const data = await res.json();
-      if (res.ok) {
-        alert("❌ Withdrawal rejected and refunded");
-        fetchWithdrawals();
-      } else {
-        alert(`❌ ${data.error || "Failed to reject"}`);
-      }
-    };
+      if (Array.isArray(data)) setWithdrawals(data);
+    } catch (err) {
+      console.error("Failed to fetch withdrawals:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    
-    const toggleSort = (column: keyof Withdrawal) => {
-      if (sortBy === column) {
-        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-      } else {
-        setSortBy(column);
-        setSortOrder("asc");
-      }
-    };
-    
-    const sortedWithdrawals = [...withdrawals].sort((a, b) => {
-      if (!sortBy) return 0;
-      const aVal = a[sortBy];
-      const bVal = b[sortBy];
-      if (typeof aVal === "number" && typeof bVal === "number") {
-        return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
-      }
-      return sortOrder === "asc"
-        ? String(aVal).localeCompare(String(bVal))
-        : String(bVal).localeCompare(String(aVal));
+  const approveWithdrawal = async (id: string) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/withdrawals/approve`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ id }),
     });
-
-    useEffect(() => {
-      fetchWithdrawals()
-
-      // Listen to real-time updates
-      socket.on("withdrawal:update", () => {
+    const data = await res.json();
+    if (res.ok) {
+      alert("✅ Withdrawal approved");
       fetchWithdrawals();
-      });
+    } else {
+      alert(`❌ ${data.error || "Failed to approve"}`);
+    }
+  };
 
+  const rejectWithdrawal = async (id: string) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/withdrawals/reject`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ id }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert("❌ Withdrawal rejected and refunded");
+      fetchWithdrawals();
+    } else {
+      alert(`❌ ${data.error || "Failed to reject"}`);
+    }
+  };
+
+  const toggleSort = (column: keyof Withdrawal) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+  };
+
+  const sortedWithdrawals = [...withdrawals].sort((a, b) => {
+    if (!sortBy) return 0;
+    const aVal = a[sortBy];
+    const bVal = b[sortBy];
+    if (typeof aVal === "number" && typeof bVal === "number") {
+      return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
+    }
+    return sortOrder === "asc"
+      ? String(aVal).localeCompare(String(bVal))
+      : String(bVal).localeCompare(String(aVal));
+  });
+
+  useEffect(() => {
+    fetchWithdrawals();
+    socket.on("withdrawal:update", fetchWithdrawals);
     return () => {
-      socket.off("withdrawal:update");
+      socket.off("withdrawal:update", fetchWithdrawals);
     };
-    }, [])
+  }, []);
 
     return (     
       <div className="max-w-4xl mx-auto p-4">

@@ -3,10 +3,12 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"
+import { useEffect } from "react"
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [errorMsg, setErrorMsg] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
 
@@ -21,10 +23,17 @@ export default function LoginPage() {
     if (/\d/.test(pwd)) strength++
     if (/[\W_]/.test(pwd)) strength++
     return strength
-  }
+  } 
+  
+  useEffect(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("balance");
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
     if (!username.trim() || !isStrongPassword(password)) {
       alert("Password must be strong (8+ chars, uppercase, lowercase, number, symbol)")
       return
@@ -40,11 +49,20 @@ export default function LoginPage() {
       if (!res.ok) throw new Error("Login failed")
 
       const data = await res.json()
+      console.log("DEBUG: Login response", res.status, data); // <-- ADD THIS
+      
+      localStorage.setItem("token", data.token)
       localStorage.setItem("username", data.username)
       localStorage.setItem("balance", data.balance)
-      router.push("/home")
+
+      if (data.isAdmin) {
+        router.push("/admin")
+      } else {
+        router.push("/home")
+      }
     } catch (err) {
-      alert("Login failed. Check backend.")
+      //alert("Login failed. Check backend.")
+      setErrorMsg("Login failed. Please try again.");
       console.error(err)
     }
   }
@@ -66,7 +84,9 @@ export default function LoginPage() {
         <h1 className="text-2xl font-semibold text-center mb-6">
           Welcome
         </h1>
-
+        {errorMsg && (
+          <p className="text-sm text-red-600 text-center mb-3">{errorMsg}</p>
+        )}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">

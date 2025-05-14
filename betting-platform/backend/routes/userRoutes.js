@@ -1,16 +1,15 @@
 // routes/userRoutes.js
 const express = require('express');
 const router = express.Router();
-const { loginUser } = require('../controllers/userController');
-const { getBalance } = require('../controllers/userController');
-const { getUserWithdrawals } = require('../controllers/userController');
+const userController = require('../controllers/userController');
+const { verifyToken } = require('../middleware/auth');
 
 
 
-router.get('/withdrawals/:username', getUserWithdrawals);
+router.get('/withdrawals/:username', verifyToken, userController.getUserWithdrawals);
 
-router.get('/user/balance/:username', getBalance);
+router.get('/user/balance/:username', verifyToken, userController.getBalance);
 
-router.post('/login', loginUser);
+router.post('/login', userController.loginRateLimiter, userController.loginUser);
 
 module.exports = router;
