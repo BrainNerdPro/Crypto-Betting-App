@@ -52,12 +52,8 @@ exports.placeBet = (io) => async (req, res) => {
 
     const bets = await Bet.find({ line_id: today });
 
-    const yes_total = bets
-      .filter((b) => b.choice === 'YES')
-      .reduce((sum, b) => sum + b.amount, 0);
-
-      const totalAmount = bets.reduce((sum, bet) => sum + bet.amount, 0);
-      const totalBets = bets.length;
+    const totalAmount = bets.reduce((sum, bet) => sum + bet.amount, 0);
+    const totalBets = bets.length;
 
     io.emit('bet_volume_updated', {
       total_bets: totalBets,
