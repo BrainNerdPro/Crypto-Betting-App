@@ -10,6 +10,7 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline'
 import Alert from "@/components/Alert";
+import ChangePasswordModal from "@/components/ChangePasswordModal";
 import { jwtDecode } from "jwt-decode"
 
 type Bet = {
@@ -39,9 +40,9 @@ export default function AdminPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showAll, setShowAll] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [passwordMessage, setPasswordMessage] = useState<{ text: string, success: boolean } | null>(null);
+  // const [currentPassword, setCurrentPassword] = useState("");
+  // const [newPassword, setNewPassword] = useState("");
+  // const [passwordMessage, setPasswordMessage] = useState<{ text: string, success: boolean } | null>(null);
 
 
 
@@ -123,33 +124,33 @@ export default function AdminPage() {
     }
   }
   
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const token = localStorage.getItem("token");
+  // const handleChangePassword = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   const token = localStorage.getItem("token");
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/change-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        currentPassword,
-        newPassword
-      })
-    });
+  //   const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/change-password`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       "Authorization": `Bearer ${token}`
+  //     },
+  //     body: JSON.stringify({
+  //       currentPassword,
+  //       newPassword
+  //     })
+  //   });
 
-    const data = await res.json();
-    if (res.ok) {
-      setPasswordMessage({ text: "Password updated successfully.", success: true });
-      setTimeout(() => {
-        setShowPasswordModal(false);
-        setPasswordMessage(null);
-      }, 1000);
-    } else {
-      setPasswordMessage({ text: data.error || "Failed to update password.", success: false });
-    }
-  };
+  //   const data = await res.json();
+  //   if (res.ok) {
+  //     setPasswordMessage({ text: "Password updated successfully.", success: true });
+  //     setTimeout(() => {
+  //       setShowPasswordModal(false);
+  //       setPasswordMessage(null);
+  //     }, 1000);
+  //   } else {
+  //     setPasswordMessage({ text: data.error || "Failed to update password.", success: false });
+  //   }
+  // };
 
 
   useEffect(() => {
@@ -411,7 +412,7 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
-      {showPasswordModal && (
+      {/* {showPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded shadow-md w-full max-w-md relative">
             <h3 className="text-lg font-semibold mb-4">Change Admin Password</h3>
@@ -455,7 +456,8 @@ export default function AdminPage() {
             )}
           </div>
         </div>
-      )}
+      )} */}
+      <ChangePasswordModal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} />
 
     </div>
     
