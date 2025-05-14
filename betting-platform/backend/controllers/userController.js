@@ -55,8 +55,7 @@ exports.loginUser = async (req, res) => {
       { username: user.username, isAdmin: user.isAdmin || false },
       JWT_SECRET,
       { expiresIn: "7d" }
-    );
-    
+    );    
 
     res.json({
       token,

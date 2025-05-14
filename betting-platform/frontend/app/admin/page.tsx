@@ -38,6 +38,12 @@ export default function AdminPage() {
   const [showResolveAlert, setShowResolveAlert] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [showAll, setShowAll] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState<{ text: string, success: boolean } | null>(null);
+
+
 
   const rowsPerPage = 10;
   const router = useRouter()
@@ -116,6 +122,35 @@ export default function AdminPage() {
       setTimeout(() => setShowResolveAlert(false), 1000);
     }
   }
+  
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/change-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        currentPassword,
+        newPassword
+      })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      setPasswordMessage({ text: "Password updated successfully.", success: true });
+      setTimeout(() => {
+        setShowPasswordModal(false);
+        setPasswordMessage(null);
+      }, 1000);
+    } else {
+      setPasswordMessage({ text: data.error || "Failed to update password.", success: false });
+    }
+  };
+
 
   useEffect(() => {
     fetchTodayBets();
@@ -173,6 +208,7 @@ export default function AdminPage() {
       <div className="flex justify-center gap-4 mb-6">
         <button onClick={() => router.push('/admin/users')} className="px-4 py-2 border rounded hover:bg-gray-100">User Balance</button>
         <button onClick={() => router.push('/admin/withdrawals')} className="px-4 py-2 border rounded hover:bg-gray-100">Withdrawals</button>
+        <button onClick={() => setShowPasswordModal(true)} className="px-4 py-2 border rounded hover:bg-gray-100">Change Password</button>
       </div>
 
       <h1 className="text-2xl font-semibold text-center mb-6">Admin Panel</h1>
@@ -375,6 +411,53 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded shadow-md w-full max-w-md relative">
+            <h3 className="text-lg font-semibold mb-4">Change Admin Password</h3>
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <input
+                type="password"
+                placeholder="Current Password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+                required
+              />
+              <input
+                type="password"
+                placeholder="New Password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded"
+                required
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  className="px-4 py-2 border rounded bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 border rounded bg-blue-600 text-white hover:opacity-90"
+                >
+                  Update
+                </button>
+              </div>
+            </form>
+            {passwordMessage && (
+              <p className={`mt-2 text-sm ${passwordMessage.success ? 'text-green-600' : 'text-red-600'}`}>
+                {passwordMessage.text}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
+    
   )
 }
