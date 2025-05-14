@@ -8,11 +8,18 @@ type Props = {
   onClose: () => void;
 };
 
-const getPasswordStrength = (password: string) => {
-  if (password.length < 6) return "weak";
-  if (/[A-Z]/.test(password) && /\d/.test(password) && /[^A-Za-z0-9]/.test(password)) return "strong";
-  return "medium";
-};
+  const isStrongPassword = (pwd: string) =>
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(pwd)
+
+  const getPasswordStrength = (pwd: string) => {
+    let strength = 0
+    if (pwd.length >= 8) strength++
+    if (/[A-Z]/.test(pwd)) strength++
+    if (/[a-z]/.test(pwd)) strength++
+    if (/\d/.test(pwd)) strength++
+    if (/[\W_]/.test(pwd)) strength++
+    return strength
+  } 
 
 const ChangePasswordModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -20,8 +27,17 @@ const ChangePasswordModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [status, setStatus] = useState<{ message: string; success: boolean } | null>(null);
-
-  const passwordStrength = getPasswordStrength(newPassword);
+  
+  const strength = getPasswordStrength(newPassword)
+  const strengthColors = [
+    "",
+    "bg-red-500",
+    "bg-orange-400",
+    "bg-yellow-400",
+    "bg-green-400",
+    "bg-green-600",
+  ]
+  const strengthLabel = ["", "Very Weak", "Weak", "Fair", "Strong", "Very Strong"]
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,20 +108,18 @@ const ChangePasswordModal: React.FC<Props> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Strength Indicator */}
-          <div className="text-sm text-gray-600">
-            Strength:{" "}
-            <span
-              className={`font-semibold ${
-                passwordStrength === "weak"
-                  ? "text-red-500"
-                  : passwordStrength === "medium"
-                  ? "text-yellow-500"
-                  : "text-green-600"
-              }`}
-            >
-              {passwordStrength}
-            </span>
-          </div>
+          
+              <div className="mt-2">
+                <div className="w-full h-2 bg-gray-200 rounded-full">
+                  <div
+                    className={`h-full ${strengthColors[strength]} rounded-full transition-all`}
+                    style={{ width: `${(strength / 5) * 100}%` }}
+                  />
+                </div>
+                <p className="text-sm text-gray-600 mt-1">
+                  Strength: <span className="font-medium">{strengthLabel[strength]}</span>
+                </p>
+              </div>
 
           <div className="flex justify-end gap-2">
             <button
