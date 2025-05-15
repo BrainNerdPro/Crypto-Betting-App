@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import io from 'socket.io-client'
-import { UserIcon, CurrencyDollarIcon, ClockIcon, ChartBarIcon, InboxIcon } from '@heroicons/react/24/outline'
+import { UserIcon, CurrencyDollarIcon, ClockIcon, ChartBarIcon, InboxIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
 
 const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}`)
 
@@ -31,6 +31,12 @@ export default function HomePage() {
   
   const router = useRouter()
 
+  const handleLogout = () => {
+    localStorage.removeItem('username');
+    localStorage.removeItem('balance');
+    router.push('/login');
+  };
+  
   const startCountdown = (cutoffISO: string) => {
     if (countdownInterval) {
       clearInterval(countdownInterval)
@@ -186,15 +192,23 @@ export default function HomePage() {
   if (!dailyLine) {
     return (
       <div className="max-w-lg mx-auto mt-10 p-6 bg-white border border-gray-200 rounded-xl shadow-sm text-center space-y-6">
-        <div className="flex justify-between items-center text-sm text-gray-700">
+        <div className="flex justify-end items-center gap-4 mb-6 text-sm text-gray-700">
           <div className="flex items-center gap-1">
             <UserIcon className="w-5 h-5 text-gray-600" />
             <span className="font-medium">{username}</span>
           </div>
           <div className="flex items-center gap-1">
-            <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
-            <span className="font-semibold">{balance} ETH</span>
+            <CurrencyDollarIcon className="w-5 h-5 text-gray-600" />
+            <span className="font-medium">{balance} ETH</span>
           </div>
+          <button
+            onClick={handleLogout}
+            title="Logout"
+            className="flex items-center gap-1 text-gray-500 hover:text-gray-600 transition"
+          >
+            <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            <span className="hidden sm:inline">Logout</span>
+          </button>
         </div>
 
         <div className="flex justify-center items-center gap-2 text-gray-500 text-lg">
@@ -223,16 +237,25 @@ export default function HomePage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <div className="flex justify-between items-center mb-6 text-sm text-gray-700">
+      <div className="flex justify-end items-center gap-4 mb-6 text-sm text-gray-700">
         <div className="flex items-center gap-1">
           <UserIcon className="w-5 h-5 text-gray-600" />
           <span className="font-medium">{username}</span>
         </div>
         <div className="flex items-center gap-1">
-          <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
-          <span className="font-semibold">{balance} ETH</span>
+          <CurrencyDollarIcon className="w-5 h-5 text-gray-600" />
+          <span className="font-medium">{balance} ETH</span>
         </div>
+        <button
+          onClick={handleLogout}
+          title="Logout"
+          className="flex items-center gap-1 text-gray-500 hover:text-gray-600 transition"
+        >
+          <ArrowRightOnRectangleIcon className="w-5 h-5" />
+          <span className="hidden sm:inline">Logout</span>
+        </button>
       </div>
+
 
       <div className="flex items-center gap-2 mb-4">
         <label htmlFor="odds" className="text-sm font-medium text-gray-600">Odds format:</label>
